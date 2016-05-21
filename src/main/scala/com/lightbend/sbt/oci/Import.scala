@@ -1,8 +1,9 @@
 package com.lightbend.sbt.oci
 
-import sbt.SettingKey
+import sbt._
 import scala.concurrent.duration.Duration
 import scala.collection.immutable.{ Seq, Map }
+import com.typesafe.sbt.SbtNativePackager.Universal
 
 object Import {
   object OciKeys {
@@ -21,8 +22,9 @@ object Import {
       "oci-hostname",
       "Hostname is the container's host name."
     )
-
   }
+
+  val Oci = config("oci") extend Universal
 
   case class Platform(os: String, arch: String)
 
@@ -38,7 +40,8 @@ object Import {
     rlimits: Option[Seq[Rlimit]] = None,
     noNewPrivileges: Option[Boolean] = None,
     apparmorProfile: Option[String] = None,
-    selinuxLabel: Option[String] = None)
+    selinuxLabel: Option[String] = None
+  )
 
   case class User(uid: Int, gid: Int, additionalGids: Seq[Int] = Seq.empty)
 
@@ -62,7 +65,8 @@ object Import {
     rootfsPropagation: Option[String] = None,
     maskedPaths: Option[Seq[String]] = None,
     readonlyPaths: Option[Seq[String]] = None,
-    mountLabel: Option[String] = None)
+    mountLabel: Option[String] = None
+  )
 
   case class IdMapping(hostID: Int, containerID: Int, size: Int)
 
@@ -75,14 +79,16 @@ object Import {
     pids: Option[Pids] = None,
     blockIO: Option[BlockIO] = None,
     hugepageLimits: Option[Seq[HugepageLimit]] = None,
-    network: Option[Network] = None)
+    network: Option[Network] = None
+  )
 
   case class DeviceCgroup(
     allow: Boolean,
     `type`: Option[String] = None,
     major: Option[Long] = None,
     minor: Option[Long] = None,
-    access: Option[String] = None)
+    access: Option[String] = None
+  )
 
   case class Memory(
     limit: Option[Long] = None,
@@ -90,7 +96,8 @@ object Import {
     swap: Option[Long] = None,
     kernel: Option[Long] = None,
     kernelTCP: Long,
-    swappiness: Option[Long] = None)
+    swappiness: Option[Long] = None
+  )
 
   case class Cpu(
     shares: Option[Long] = None,
@@ -99,7 +106,8 @@ object Import {
     realtimeRuntime: Option[Long] = None,
     realtimePeriod: Option[Long] = None,
     cpus: Option[String] = None,
-    mems: Option[String] = None)
+    mems: Option[String] = None
+  )
 
   case class Pids(limit: Option[Long])
 
@@ -110,7 +118,8 @@ object Import {
     blkioThrottleReadBpsDevice: Option[Seq[ThrottleDevice]] = None,
     blkioThrottleWriteBpsDevice: Option[Seq[ThrottleDevice]] = None,
     blkioThrottleReadIOPSDevice: Option[Seq[ThrottleDevice]] = None,
-    blkioThrottleWriteIOPSDevice: Option[Seq[ThrottleDevice]] = None)
+    blkioThrottleWriteIOPSDevice: Option[Seq[ThrottleDevice]] = None
+  )
 
   sealed trait BlockIODevice {
     def major: Long
@@ -121,12 +130,14 @@ object Import {
     major: Long,
     minor: Long,
     weight: Option[Short] = None,
-    leafWeight: Option[Short] = None) extends BlockIODevice
+    leafWeight: Option[Short] = None
+  ) extends BlockIODevice
 
   case class ThrottleDevice(
     major: Long,
     minor: Long,
-    rate: Option[Long] = None) extends BlockIODevice
+    rate: Option[Long] = None
+  ) extends BlockIODevice
 
   case class HugepageLimit(pageSize: Option[String] = None, limit: Option[Long] = None)
 
@@ -156,12 +167,14 @@ object Import {
     minor: Long,
     fileMode: Option[Int] = None, // TODO: Create a `FileMode` adt. Reference: https://golang.org/pkg/os/#FileMode
     uid: Option[Int] = None,
-    gid: Option[Int] = None)
+    gid: Option[Int] = None
+  )
 
   case class Seccomp(
     defaultAction: Action,
     architectures: Seq[Architecture],
-    syscalls: Option[Seq[Syscall]])
+    syscalls: Option[Seq[Syscall]]
+  )
 
   sealed trait Action
 
@@ -211,7 +224,8 @@ object Import {
     maxShmMemory: Option[String] = None,
     anet: Option[Seq[Anet]] = None,
     cappedCPU: Option[CappedCPU] = None,
-    cappedMemory: Option[CappedMemory] = None)
+    cappedMemory: Option[CappedMemory] = None
+  )
 
   case class Anet(
     linkname: Option[String] = None,
@@ -220,11 +234,13 @@ object Import {
     configureAllowedAddress: Option[String] = None,
     defrouter: Option[String] = None,
     linkProtection: Option[String] = None,
-    macAddress: Option[String] = None)
+    macAddress: Option[String] = None
+  )
 
   case class CappedCPU(ncpus: Option[String] = None)
 
   case class CappedMemory(
     physical: Option[String] = None,
-    swap: Option[String] = None)
+    swap: Option[String] = None
+  )
 }
