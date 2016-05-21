@@ -60,49 +60,49 @@ object Import {
 
   case class Platform(os: String, arch: String)
 
-  case class Root(path: String, readonly: Option[Boolean])
+  case class Root(path: String, readonly: Option[Boolean] = None)
 
   case class Process(
-    terminal: Option[Boolean],
+    terminal: Option[Boolean] = None,
     user: User,
-    args: Seq[String],
-    env: Option[Seq[String]],
+    args: Seq[String] = Seq.empty,
+    env: Option[Seq[String]] = None,
     cwd: String,
-    capabilities: Option[Seq[String]],
-    rlimits: Option[Seq[Rlimit]],
-    noNewPrivileges: Option[Boolean],
-    apparmorProfile: Option[String],
-    selinuxLabel: Option[String])
+    capabilities: Option[Seq[String]] = None,
+    rlimits: Option[Seq[Rlimit]] = None,
+    noNewPrivileges: Option[Boolean] = None,
+    apparmorProfile: Option[String] = None,
+    selinuxLabel: Option[String] = None)
 
-  case class User(uid: Int, gid: Int, additionalGids: Seq[Int])
+  case class User(uid: Int, gid: Int, additionalGids: Seq[Int] = Seq.empty)
 
   case class Rlimit(`type`: String, hard: Long, soft: Long)
 
-  case class Mount(destination: String, `type`: String, source: String, options: Option[Seq[String]])
+  case class Mount(destination: String, `type`: String, source: String, options: Option[Seq[String]] = None)
 
-  case class Hooks(prestart: Option[Seq[Hook]], poststart: Option[Seq[Hook]], poststop: Option[Seq[Hook]])
+  case class Hooks(prestart: Option[Seq[Hook]] = None, poststart: Option[Seq[Hook]] = None, poststop: Option[Seq[Hook]] = None)
 
-  case class Hook(path: String, args: Seq[String], env: Seq[String], timeout: Duration)
+  case class Hook(path: String, args: Seq[String] = Seq.empty, env: Seq[String] = Seq.empty, timeout: Duration)
 
   case class Linux(
-    uidMappings: Option[Seq[IdMapping]],
-    gidMappings: Option[Seq[IdMapping]],
-    sysctl: Option[Map[String, String]],
-    resources: Option[Resources],
-    cgroupsPath: Option[String],
-    namespaces: Option[Seq[Namespace]],
-    devices: Option[Seq[Device]],
-    seccomp: Option[Seccomp],
-    rootfsPropagation: Option[String],
-    maskedPaths: Option[Seq[String]],
-    readonlyPaths: Option[Seq[String]],
-    mountLabel: Option[String])
+    uidMappings: Option[Seq[IdMapping]] = None,
+    gidMappings: Option[Seq[IdMapping]] = None,
+    sysctl: Option[Map[String, String]] = None,
+    resources: Option[Resources] = None,
+    cgroupsPath: Option[String] = None,
+    namespaces: Option[Seq[Namespace]] = None,
+    devices: Option[Seq[Device]] = None,
+    seccomp: Option[Seccomp] = None,
+    rootfsPropagation: Option[String] = None,
+    maskedPaths: Option[Seq[String]] = None,
+    readonlyPaths: Option[Seq[String]] = None,
+    mountLabel: Option[String] = None)
 
   case class IdMapping(hostID: Int, containerID: Int, size: Int)
 
   case class Resources()
 
-  case class Namespace(`type`: NamespaceType, path: Option[String])
+  case class Namespace(`type`: NamespaceType, path: Option[String] = None)
 
   sealed trait NamespaceType {
     override def toString = this.getClass.toString.toLowerCase
@@ -122,34 +122,34 @@ object Import {
     `type`: String,
     major: Long,
     minor: Long,
-    fileMode: Option[Int], // TODO: Create a `FileMode` adt. Reference: https://golang.org/pkg/os/#FileMode
-    uid: Option[Int],
-    gid: Option[Int])
+    fileMode: Option[Int] = None, // TODO: Create a `FileMode` adt. Reference: https://golang.org/pkg/os/#FileMode
+    uid: Option[Int] = None,
+    gid: Option[Int] = None)
 
   // TODO: Add Seccomp parameters
   case class Seccomp()
 
   case class Solaris(
-    milestone: Option[String],
-    limitpriv: Option[String],
-    maxShmMemory: Option[String],
-    anet: Option[Seq[Anet]],
-    cappedCPU: Option[CappedCPU],
-    cappedMemory: Option[CappedMemory])
+    milestone: Option[String] = None,
+    limitpriv: Option[String] = None,
+    maxShmMemory: Option[String] = None,
+    anet: Option[Seq[Anet]] = None,
+    cappedCPU: Option[CappedCPU] = None,
+    cappedMemory: Option[CappedMemory] = None)
 
   case class Anet(
-    linkname: Option[String],
-    lowerLink: Option[String],
-    allowedAddress: Option[String],
-    configureAllowedAddress: Option[String],
-    defrouter: Option[String],
-    linkProtection: Option[String],
-    macAddress: Option[String])
+    linkname: Option[String] = None,
+    lowerLink: Option[String] = None,
+    allowedAddress: Option[String] = None,
+    configureAllowedAddress: Option[String] = None,
+    defrouter: Option[String] = None,
+    linkProtection: Option[String] = None,
+    macAddress: Option[String] = None)
 
-  case class CappedCPU(ncpus: Option[String])
+  case class CappedCPU(ncpus: Option[String] = None)
 
   case class CappedMemory(
-    physical: Option[String],
-    swap: Option[String])
+    physical: Option[String] = None,
+    swap: Option[String] = None)
 
 }
