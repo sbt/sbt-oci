@@ -6,7 +6,7 @@ import sbt._
 import sbt.Keys._
 import SbtNativePackager.Universal
 
-object OciBundle extends AutoPlugin {
+object OciPlugin extends AutoPlugin {
 
   import Import._
   import SbtNativePackager.autoImport._
