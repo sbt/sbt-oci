@@ -7,16 +7,6 @@ import scala.collection.immutable.{ Seq, Map }
 object Import {
   object OciKeys {
 
-    val ociVersion = SettingKey[String](
-      "oci-version",
-      "OCI Specification version that the package types support."
-    )
-
-    val platform = SettingKey[Platform](
-      "oci-platform",
-      "Platform is the host information for OS and Arch."
-    )
-
     val root = SettingKey[Root](
       "oci-root",
       "Root information for the container's filesystem."
@@ -32,30 +22,6 @@ object Import {
       "Hostname is the container's host name."
     )
 
-    val mounts = SettingKey[Option[Seq[Mount]]](
-      "oci-mounts",
-      "Mounts profile configuration for adding mounts to the container's filesystem."
-    )
-
-    val hooks = SettingKey[Hooks](
-      "oci-hooks",
-      "Hooks are the commands run at various lifecycle events of the container."
-    )
-
-    val annotations = SettingKey[Option[Map[String, String]]](
-      "oci-annotations",
-      "Annotations is an unstructured key value map that may be set by external tools to store and retrieve arbitrary metadata."
-    )
-
-    val linux = SettingKey[Option[Linux]](
-      "oci-linux",
-      "Linux is platform specific configuration for Linux based containers."
-    )
-
-    val solaris = SettingKey[Option[Solaris]](
-      "oci-Solaris",
-      "Solaris is platform specific configuration for Solaris containers."
-    )
   }
 
   case class Platform(os: String, arch: String)
@@ -109,16 +75,14 @@ object Import {
     pids: Option[Pids] = None,
     blockIO: Option[BlockIO] = None,
     hugepageLimits: Option[Seq[HugepageLimit]] = None,
-    network: Option[Network] = None
-  )
+    network: Option[Network] = None)
 
   case class DeviceCgroup(
     allow: Boolean,
     `type`: Option[String] = None,
     major: Option[Long] = None,
     minor: Option[Long] = None,
-    access: Option[String] = None
-  )
+    access: Option[String] = None)
 
   case class Memory(
     limit: Option[Long] = None,
@@ -126,8 +90,7 @@ object Import {
     swap: Option[Long] = None,
     kernel: Option[Long] = None,
     kernelTCP: Long,
-    swappiness: Option[Long] = None
-  )
+    swappiness: Option[Long] = None)
 
   case class Cpu(
     shares: Option[Long] = None,
@@ -136,8 +99,7 @@ object Import {
     realtimeRuntime: Option[Long] = None,
     realtimePeriod: Option[Long] = None,
     cpus: Option[String] = None,
-    mems: Option[String] = None
-  )
+    mems: Option[String] = None)
 
   case class Pids(limit: Option[Long])
 
@@ -148,10 +110,9 @@ object Import {
     blkioThrottleReadBpsDevice: Option[Seq[ThrottleDevice]] = None,
     blkioThrottleWriteBpsDevice: Option[Seq[ThrottleDevice]] = None,
     blkioThrottleReadIOPSDevice: Option[Seq[ThrottleDevice]] = None,
-    blkioThrottleWriteIOPSDevice: Option[Seq[ThrottleDevice]] = None
-  )
+    blkioThrottleWriteIOPSDevice: Option[Seq[ThrottleDevice]] = None)
 
-  private trait BlockIODevice {
+  sealed trait BlockIODevice {
     def major: Long
     def minor: Long
   }
@@ -165,8 +126,7 @@ object Import {
   case class ThrottleDevice(
     major: Long,
     minor: Long,
-    rate: Option[Long] = None
-  )
+    rate: Option[Long] = None) extends BlockIODevice
 
   case class HugepageLimit(pageSize: Option[String] = None, limit: Option[Long] = None)
 
@@ -201,8 +161,7 @@ object Import {
   case class Seccomp(
     defaultAction: Action,
     architectures: Seq[Architecture],
-    syscalls: Option[Seq[Syscall]]
-  )
+    syscalls: Option[Seq[Syscall]])
 
   sealed trait Action
 
