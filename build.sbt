@@ -1,4 +1,6 @@
 import scalariform.formatter.preferences._
+import com.typesafe.sbt.SbtScalariform.scalariformSettings
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys
 
 sbtPlugin := true
 
