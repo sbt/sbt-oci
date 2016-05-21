@@ -100,7 +100,79 @@ object Import {
 
   case class IdMapping(hostID: Int, containerID: Int, size: Int)
 
-  case class Resources()
+  case class Resources(
+    devices: Seq[DeviceCgroup] = Seq.empty,
+    disableOOMKiller: Option[Boolean] = None,
+    oomScoreAdj: Option[Int] = None,
+    memory: Option[Memory] = None,
+    cpu: Option[Cpu] = None,
+    pids: Option[Pids] = None,
+    blockIO: Option[BlockIO] = None,
+    hugepageLimits: Option[Seq[HugepageLimit]] = None,
+    network: Option[Network] = None
+  )
+
+  case class DeviceCgroup(
+    allow: Boolean,
+    `type`: Option[String] = None,
+    major: Option[Long] = None,
+    minor: Option[Long] = None,
+    access: Option[String] = None
+  )
+
+  case class Memory(
+    limit: Option[Long] = None,
+    reservation: Option[Long] = None,
+    swap: Option[Long] = None,
+    kernel: Option[Long] = None,
+    kernelTCP: Long,
+    swappiness: Option[Long] = None
+  )
+
+  case class Cpu(
+    shares: Option[Long] = None,
+    quota: Option[Long] = None,
+    period: Option[Long] = None,
+    realtimeRuntime: Option[Long] = None,
+    realtimePeriod: Option[Long] = None,
+    cpus: Option[String] = None,
+    mems: Option[String] = None
+  )
+
+  case class Pids(limit: Option[Long])
+
+  case class BlockIO(
+    blkioWeight: Option[Short] = None,
+    blkioLeafWeight: Option[Short] = None,
+    blkioWeightDevice: Option[Seq[WeightDevice]] = None,
+    blkioThrottleReadBpsDevice: Option[Seq[ThrottleDevice]] = None,
+    blkioThrottleWriteBpsDevice: Option[Seq[ThrottleDevice]] = None,
+    blkioThrottleReadIOPSDevice: Option[Seq[ThrottleDevice]] = None,
+    blkioThrottleWriteIOPSDevice: Option[Seq[ThrottleDevice]] = None
+  )
+
+  private trait BlockIODevice {
+    def major: Long
+    def minor: Long
+  }
+
+  case class WeightDevice(
+    major: Long,
+    minor: Long,
+    weight: Option[Short] = None,
+    leafWeight: Option[Short] = None) extends BlockIODevice
+
+  case class ThrottleDevice(
+    major: Long,
+    minor: Long,
+    rate: Option[Long] = None
+  )
+
+  case class HugepageLimit(pageSize: Option[String] = None, limit: Option[Long] = None)
+
+  case class Network(classID: Int, priorities: Option[Seq[InterfacePriority]])
+
+  case class InterfacePriority(name: String, priority: Int)
 
   case class Namespace(`type`: NamespaceType, path: Option[String] = None)
 
@@ -126,8 +198,53 @@ object Import {
     uid: Option[Int] = None,
     gid: Option[Int] = None)
 
-  // TODO: Add Seccomp parameters
-  case class Seccomp()
+  case class Seccomp(
+    defaultAction: Action,
+    architectures: Seq[Architecture],
+    syscalls: Option[Seq[Syscall]]
+  )
+
+  sealed trait Action
+
+  object Action {
+    case object Kill extends Action { override def toString = "SCMP_ACT_KILL" }
+    case object Trap extends Action { override def toString = "SCMP_ACT_TRAP" }
+    case object Errno extends Action { override def toString = "SCMP_ACT_ERRNO" }
+    case object Trace extends Action { override def toString = "SCMP_ACT_TRACE" }
+    case object Allow extends Action { override def toString = "SCMP_ACT_ALLOW" }
+  }
+
+  sealed trait Architecture
+
+  object Architecture {
+    case object X86 extends Architecture { override def toString = "SCMP_ARCH_X86" }
+    case object X86_64 extends Architecture { override def toString = "SCMP_ARCH_X86_64" }
+    case object X32 extends Architecture { override def toString = "SCMP_ARCH_X32" }
+    case object ARM extends Architecture { override def toString = "SCMP_ARCH_ARM" }
+    case object AARCH64 extends Architecture { override def toString = "SCMP_ARCH_AARCH64" }
+    case object MIPS extends Architecture { override def toString = "SCMP_ARCH_MIPS" }
+    case object MIPS64 extends Architecture { override def toString = "SCMP_ARCH_MIPS64" }
+    case object MIPS64N32 extends Architecture { override def toString = "SCMP_ARCH_MIPS64N32" }
+    case object MIPSEL extends Architecture { override def toString = "SCMP_ARCH_MIPSEL" }
+    case object MIPSEL64 extends Architecture { override def toString = "SCMP_ARCH_MIPESEL64" }
+    case object MIPSEL64N32 extends Architecture { override def toString = "SCMP_ARCH_MIPSEL63N32" }
+  }
+
+  case class Syscall(name: String, action: Action, args: Option[Seq[Arg]])
+
+  case class Arg(index: Int, value: Long, valueTwo: Long, op: Operator)
+
+  sealed trait Operator
+
+  object Operator {
+    case object NotEqual extends Operator { override def toString = "SCMP_CMP_NE" }
+    case object LessThan extends Operator { override def toString = "SCMP_CMP_LT" }
+    case object LessEqual extends Operator { override def toString = "SCMP_CMP_LE" }
+    case object EqualTo extends Operator { override def toString = "SCMP_CMP_EQ" }
+    case object GreaterEqual extends Operator { override def toString = "SCMP_CMP_GE" }
+    case object GreaterThan extends Operator { override def toString = "SCMP_CMP_GT" }
+    case object MaskedEqual extends Operator { override def toString = "SCMP_CMP_MASKED_EQ" }
+  }
 
   case class Solaris(
     milestone: Option[String] = None,
@@ -151,5 +268,4 @@ object Import {
   case class CappedMemory(
     physical: Option[String] = None,
     swap: Option[String] = None)
-
 }
