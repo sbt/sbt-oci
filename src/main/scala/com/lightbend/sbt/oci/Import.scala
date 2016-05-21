@@ -47,7 +47,7 @@ object Import {
       "Annotations is an unstructured key value map that may be set by external tools to store and retrieve arbitrary metadata."
     )
 
-    val linux = SettingKey[Linux](
+    val linux = SettingKey[Option[Linux]](
       "oci-linux",
       "Linux is platform specific configuration for Linux based containers."
     )
@@ -85,24 +85,24 @@ object Import {
   case class Hook(path: String, args: Seq[String], env: Seq[String], timeout: Duration)
 
   case class Linux(
-    uidMappings: Seq[IdMapping],
-    gidMappings: Seq[IdMapping],
-    sysctl: Map[String, String],
-    resources: Resources,
-    cgroupsPath: String,
-    namespaces: Seq[Namespace],
-    devices: Seq[Device],
-    seccomp: Seccomp,
-    rootfsPropagation: String,
-    maskedPaths: Seq[String],
-    readonlyPaths: Seq[String],
-    mountLabel: String)
+    uidMappings: Option[Seq[IdMapping]],
+    gidMappings: Option[Seq[IdMapping]],
+    sysctl: Option[Map[String, String]],
+    resources: Option[Resources],
+    cgroupsPath: Option[String],
+    namespaces: Option[Seq[Namespace]],
+    devices: Option[Seq[Device]],
+    seccomp: Option[Seccomp],
+    rootfsPropagation: Option[String],
+    maskedPaths: Option[Seq[String]],
+    readonlyPaths: Option[Seq[String]],
+    mountLabel: Option[String])
 
-  case class IdMapping(hostId: Int, containerId: Int, size: Int)
+  case class IdMapping(hostID: Int, containerID: Int, size: Int)
 
   case class Resources()
 
-  case class Namespace(`type`: NamespaceType, path: String)
+  case class Namespace(`type`: NamespaceType, path: Option[String])
 
   sealed trait NamespaceType {
     override def toString = this.getClass.toString.toLowerCase
@@ -122,9 +122,9 @@ object Import {
     `type`: String,
     major: Long,
     minor: Long,
-    fileMode: Int, // TODO: Create a `FileMode` adt. Reference: https://golang.org/pkg/os/#FileMode
-    uid: Int,
-    gid: Int)
+    fileMode: Option[Int], // TODO: Create a `FileMode` adt. Reference: https://golang.org/pkg/os/#FileMode
+    uid: Option[Int],
+    gid: Option[Int])
 
   // TODO: Add Seccomp parameters
   case class Seccomp()
