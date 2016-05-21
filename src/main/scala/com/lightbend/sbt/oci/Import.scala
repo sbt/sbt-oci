@@ -2,7 +2,7 @@ package com.lightbend.sbt.oci
 
 import sbt.SettingKey
 import scala.concurrent.duration.Duration
-import scala.collection.immutable.{Seq, Map}
+import scala.collection.immutable.{ Seq, Map }
 
 object Import {
   object OciKeys {
@@ -27,12 +27,12 @@ object Import {
       "Process is the container's main process."
     )
 
-    val hostname = SettingKey[String](
+    val hostname = SettingKey[Option[String]](
       "oci-hostname",
       "Hostname is the container's host name."
     )
 
-    val mounts = SettingKey[Seq[Mount]](
+    val mounts = SettingKey[Option[Seq[Mount]]](
       "oci-mounts",
       "Mounts profile configuration for adding mounts to the container's filesystem."
     )
@@ -42,7 +42,7 @@ object Import {
       "Hooks are the commands run at various lifecycle events of the container."
     )
 
-    val annotations = SettingKey[Map[String, String]](
+    val annotations = SettingKey[Option[Map[String, String]]](
       "oci-annotations",
       "Annotations is an unstructured key value map that may be set by external tools to store and retrieve arbitrary metadata."
     )
@@ -51,32 +51,36 @@ object Import {
       "oci-linux",
       "Linux is platform specific configuration for Linux based containers."
     )
+
+    val solaris = SettingKey[Option[Solaris]](
+      "oci-Solaris",
+      "Solaris is platform specific configuration for Solaris containers."
+    )
   }
 
   case class Platform(os: String, arch: String)
 
-  case class Root(path: String, readonly: Boolean)
+  case class Root(path: String, readonly: Option[Boolean])
 
   case class Process(
-    terminal: Boolean,
+    terminal: Option[Boolean],
     user: User,
     args: Seq[String],
-    env: Seq[String],
+    env: Option[Seq[String]],
     cwd: String,
-    capabilities: Seq[String],
-    rlimits: Seq[Rlimit],
-    noNewPriviliges: Boolean,
-    apparmorProfile: String,
-    selinuxLabel: String
-  )
+    capabilities: Option[Seq[String]],
+    rlimits: Option[Seq[Rlimit]],
+    noNewPrivileges: Option[Boolean],
+    apparmorProfile: Option[String],
+    selinuxLabel: Option[String])
 
   case class User(uid: Int, gid: Int, additionalGids: Seq[Int])
 
   case class Rlimit(`type`: String, hard: Long, soft: Long)
 
-  case class Mount(destination: String, `type`: String, source: String, options: Seq[String])
+  case class Mount(destination: String, `type`: String, source: String, options: Option[Seq[String]])
 
-  case class Hooks(preStart: Seq[Hook], postStart: Seq[Hook], postStop: Seq[Hook])
+  case class Hooks(prestart: Option[Seq[Hook]], poststart: Option[Seq[Hook]], poststop: Option[Seq[Hook]])
 
   case class Hook(path: String, args: Seq[String], env: Seq[String], timeout: Duration)
 
@@ -92,8 +96,7 @@ object Import {
     rootfsPropagation: String,
     maskedPaths: Seq[String],
     readonlyPaths: Seq[String],
-    mountLabel: String
-  )
+    mountLabel: String)
 
   case class IdMapping(hostId: Int, containerId: Int, size: Int)
 
@@ -121,9 +124,32 @@ object Import {
     minor: Long,
     fileMode: Int, // TODO: Create a `FileMode` adt. Reference: https://golang.org/pkg/os/#FileMode
     uid: Int,
-    gid: Int
-  )
+    gid: Int)
 
   // TODO: Add Seccomp parameters
   case class Seccomp()
+
+  case class Solaris(
+    milestone: Option[String],
+    limitpriv: Option[String],
+    maxShmMemory: Option[String],
+    anet: Option[Seq[Anet]],
+    cappedCPU: Option[CappedCPU],
+    cappedMemory: Option[CappedMemory])
+
+  case class Anet(
+    linkname: Option[String],
+    lowerLink: Option[String],
+    allowedAddress: Option[String],
+    configureAllowedAddress: Option[String],
+    defrouter: Option[String],
+    linkProtection: Option[String],
+    macAddress: Option[String])
+
+  case class CappedCPU(ncpus: Option[String])
+
+  case class CappedMemory(
+    physical: Option[String],
+    swap: Option[String])
+
 }
