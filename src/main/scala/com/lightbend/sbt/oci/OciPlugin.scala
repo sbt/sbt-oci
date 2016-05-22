@@ -1,24 +1,37 @@
 package com.lightbend.sbt.oci
 
-import com.typesafe.sbt.SbtNativePackager
-import com.typesafe.sbt.packager.{ Stager, universal }
+import java.io.File
 import sbt._
-import sbt.Keys._
-import com.typesafe.sbt.packager.Keys.{ stage => _, stagingDirectory => _, _ }
-import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
-import scala.collection.immutable.{ Map, Seq }
+import sbt.Keys.{
+  name,
+  target,
+  mappings,
+  sourceDirectory,
+  streams,
+  packageBin
+}
+import com.typesafe.sbt.packager.Keys._
+import com.typesafe.sbt.packager.{ Stager, MappingsHelper }
+import com.typesafe.sbt.packager.linux.LinuxPlugin
+import com.typesafe.sbt.packager.universal.UniversalPlugin
 
 object OciPlugin extends AutoPlugin {
 
-  import Import._
+  object autoImport extends Import {
+    val Oci = config("oci")
+  }
+
+  import autoImport._
   import OciKeys._
-  import SbtNativePackager.autoImport._
+  import UniversalPlugin.autoImport._
+  import LinuxPlugin.autoImport.defaultLinuxInstallLocation
 
-  val autoImport = Import
-
-  override def requires = universal.UniversalPlugin
+  override def requires = UniversalPlugin
 
   override def trigger = AllRequirements
+
+  override def projectConfigurations: Seq[Configuration] =
+    Seq(Oci)
 
   override def projectSettings =
     Seq(
@@ -69,18 +82,46 @@ object OciPlugin extends AutoPlugin {
           Namespace(NamespaceType.Mount)
         ))
       ))
-    ) ++ ociSettings(Oci)
+    ) ++ mapGenericFilesToOci ++ ociSettings
 
-  private def ociSettings(config: Configuration): scala.collection.Seq[Def.Setting[_]] =
-    inConfig(config)(Seq(
-      NativePackagerKeys.executableScriptName := executableScriptName.value,
-      NativePackagerKeys.packageName := packageName.value,
-      NativePackagerKeys.stage <<= (streams, stagingDirectory, mappings) map Stager.stage(config.name),
-      NativePackagerKeys.stagingDirectory := (target in config).value / "stage",
+  private def ociSettings: scala.collection.Seq[Def.Setting[_]] =
+    inConfig(Oci)(Seq(
+      executableScriptName := executableScriptName.value,
+      mappings ++= ociPackageMappings.value,
+      name := name.value,
+      packageName := packageName.value,
+      sourceDirectory := sourceDirectory.value / "oci",
       target := target.value / "oci",
+      stagingDirectory := (target in Oci).value / "stage",
+      stage <<= (streams, stagingDirectory, mappings) map Stager.stage(Oci.name),
 
-      NativePackagerKeys.defaultLinuxInstallLocation := "/opt/" + name.value
+      packageBin <<= packageBin in Oci,
+      dist <<= dist in Oci,
+      defaultLinuxInstallLocation := s"/opt/${name.value}",
+
+      ociPackageMappings <<= sourceDirectory map { dir =>
+        println("asdads")
+        MappingsHelper.contentOf(dir)
+      }
     ))
+
+  private def mapGenericFilesToOci: Seq[Setting[_]] = {
+    def renameDests(from: Seq[(File, String)], dest: String) = {
+      for {
+        (f, path) <- from
+        newPath = "%s/%s" format (dest, path)
+      } yield (f, newPath)
+    }
+
+    inConfig(Oci)(Seq(
+      mappings <<= (mappings in Universal, defaultLinuxInstallLocation) map { (mappings, dest) =>
+        renameDests(mappings, dest)
+      }
+    ))
+  }
+
+  private val ociPackageMappings = taskKey[Seq[(File, String)]]("Generates location mappings for OCI.")
+  private val ociTarget = taskKey[String]("Defines target used when building OCI container")
 
   private val ociVersion = settingKey[String]("OCI Specification version that the package types support.")
   private val platform = settingKey[Platform]("Platform is the host information for OS and Arch.")

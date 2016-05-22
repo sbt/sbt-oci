@@ -1,11 +1,10 @@
 package com.lightbend.sbt.oci
 
 import sbt._
-import scala.concurrent.duration.Duration
-import scala.collection.immutable.{ Seq, Map }
-import com.typesafe.sbt.SbtNativePackager.Universal
+import scala.concurrent.duration.FiniteDuration
 
-object Import {
+trait Import {
+
   object OciKeys {
 
     val root = SettingKey[Root](
@@ -23,8 +22,6 @@ object Import {
       "Hostname is the container's host name."
     )
   }
-
-  val Oci = config("oci") extend Universal
 
   case class Platform(os: String, arch: String)
 
@@ -51,7 +48,7 @@ object Import {
 
   case class Hooks(prestart: Option[Seq[Hook]] = None, poststart: Option[Seq[Hook]] = None, poststop: Option[Seq[Hook]] = None)
 
-  case class Hook(path: String, args: Seq[String] = Seq.empty, env: Seq[String] = Seq.empty, timeout: Duration)
+  case class Hook(path: String, args: Seq[String] = Seq.empty, env: Seq[String] = Seq.empty, timeout: FiniteDuration)
 
   case class Linux(
     uidMappings: Option[Seq[IdMapping]] = None,

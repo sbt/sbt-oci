@@ -1,6 +1,5 @@
-name := "simple-test"
+enablePlugins(JavaAppPackaging)
 
-version := "0.1.0-SNAPSHOT"
+name := "oci-test"
 
-lazy val root = (project in file("."))
-  .enablePlugins(JavaAppPackaging)
+version := "0.1.0"
