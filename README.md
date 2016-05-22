@@ -1,6 +1,6 @@
 # OCI Plugin
 
-[![Build Status](https://api.travis-ci.org/sbt/sbt-oci.png?branch=master)](https://travis-ci.org/sbt/sbt-oci)
+# This project is WORK IN PROGRESS. DON'T USE IT YET!
 
 ## Introduction
 
